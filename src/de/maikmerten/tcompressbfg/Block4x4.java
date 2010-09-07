@@ -133,7 +133,7 @@ public class Block4x4 {
 
             double minerror = Integer.MAX_VALUE;
             byte minidx = 0;
-            for (byte idx = 0; idx <= 3; ++idx) {
+            for (byte idx = 0; idx < 4; ++idx) {
                 int palettecolor = colors[idx];
 
                 double error = RGBUtil.getRGBDistance(datacolor, palettecolor);
@@ -159,15 +159,11 @@ public class Block4x4 {
     }
 
     public void writeBytes(DataOutputStream ds) throws Exception {
-        Color16 c0out = c0;
-        Color16 c1out = c1;
-
-
         byte[] b = new byte[1];
         long bytes = 0;
-        bytes = c0out.r << 11 | c0out.g << 5 | c0out.b;
+        bytes = c0.r << 11 | c0.g << 5 | c0.b;
         bytes = bytes << 16;
-        bytes = bytes | c1out.r << 11 | c1out.g << 5 | c1out.b;
+        bytes = bytes | c1.r << 11 | c1.g << 5 | c1.b;
 
         b[0] = (byte) (bytes & 0xFF);
         ds.write(b);
