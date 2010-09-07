@@ -159,24 +159,16 @@ public class Block4x4 {
     }
 
     public void writeBytes(DataOutputStream ds) throws Exception {
-        byte[] b = new byte[1];
-        long bytes = 0;
-        bytes = c0.r << 11 | c0.g << 5 | c0.b;
-        bytes = bytes << 16;
-        bytes = bytes | c1.r << 11 | c1.g << 5 | c1.b;
+        int bits = 0;
+        bits = c0.r << 11 | c0.g << 5 | c0.b;
+        bits = bits << 16;
+        bits = bits | c1.r << 11 | c1.g << 5 | c1.b;
 
-        b[0] = (byte) (bytes & 0xFF);
-        ds.write(b);
-        b[0] = (byte) ((bytes & 0xFF00) >> 8);
-        ds.write(b);
-        b[0] = (byte) ((bytes & 0xFF0000) >> 16);
-        ds.write(b);
-        b[0] = (byte) ((bytes & 0xFF000000) >> 24);
-        ds.write(b);
+        ByteWriter.write32Little(bits, ds);
 
 
-        bytes = 0;
-        bytes = colorIndices[0]
+        bits = 0;
+        bits = colorIndices[0]
                 | colorIndices[1] << 2
                 | colorIndices[2] << 4
                 | colorIndices[3] << 6
@@ -193,16 +185,7 @@ public class Block4x4 {
                 | colorIndices[14] << 28
                 | colorIndices[15] << 30;
 
-
-        b[0] = (byte) (bytes & 0xFF);
-        ds.write(b);
-        b[0] = (byte) ((bytes & 0xFF00) >> 8);
-        ds.write(b);
-        b[0] = (byte) ((bytes & 0xFF0000) >> 16);
-        ds.write(b);
-        b[0] = (byte) ((bytes & 0xFF000000) >> 24);
-        ds.write(b);
-
+        ByteWriter.write32Little(bits, ds);
 
     }
 }
