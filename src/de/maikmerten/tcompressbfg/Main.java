@@ -34,17 +34,16 @@ public class Main {
 
                 for (int xoffset = 0; xoffset < 4; ++xoffset) {
                     for (int yoffset = 0; yoffset < 4; ++yoffset) {
-                        rgbdata[15 - ((yoffset * 4) + xoffset)] = bimage.getRGB(x + xoffset, y + yoffset);
+                        rgbdata[(yoffset * 4) + xoffset] = bimage.getRGB(x + xoffset, y + yoffset);
                     }
                 }
-
 
                 Block4x4 block = new Block4x4(rgbdata);
 
                 int[] rgbdata2 = block.getRGBData();
                 for (int xoffset = 0; xoffset < 4; ++xoffset) {
                     for (int yoffset = 0; yoffset < 4; ++yoffset) {
-                        bimage.setRGB(x + xoffset, y + yoffset, rgbdata2[15 - ((yoffset * 4) + xoffset)]);
+                        bimage.setRGB(x + xoffset, y + yoffset, rgbdata2[(yoffset * 4) + xoffset]);
                     }
                 }
 

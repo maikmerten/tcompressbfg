@@ -180,22 +180,22 @@ public class Block4x4 {
 
 
         bytes = 0;
-        bytes = colorIndices[15]
-                | colorIndices[14] << 2
-                | colorIndices[13] << 4
-                | colorIndices[12] << 6
-                | colorIndices[11] << 8
-                | colorIndices[10] << 10
-                | colorIndices[9] << 12
-                | colorIndices[8] << 14
-                | colorIndices[7] << 16
-                | colorIndices[6] << 18
-                | colorIndices[5] << 20
-                | colorIndices[4] << 22
-                | colorIndices[3] << 24
-                | colorIndices[2] << 26
-                | colorIndices[1] << 28
-                | colorIndices[0] << 30;
+        bytes = colorIndices[0]
+                | colorIndices[1] << 2
+                | colorIndices[2] << 4
+                | colorIndices[3] << 6
+                | colorIndices[4] << 8
+                | colorIndices[5] << 10
+                | colorIndices[6] << 12
+                | colorIndices[7] << 14
+                | colorIndices[8] << 16
+                | colorIndices[9] << 18
+                | colorIndices[10] << 20
+                | colorIndices[11] << 22
+                | colorIndices[12] << 24
+                | colorIndices[13] << 26
+                | colorIndices[14] << 28
+                | colorIndices[15] << 30;
 
 
         b[0] = (byte) (bytes & 0xFF);
