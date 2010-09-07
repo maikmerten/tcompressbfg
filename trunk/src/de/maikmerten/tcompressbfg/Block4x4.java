@@ -104,19 +104,21 @@ public class Block4x4 {
     private void computeColors() {
 
         int r0 = c0.rgb_r;
-        int r1 = c1.rgb_r;
-        int r2 = (r0 + r0 + r1) / 3;
-        int r3 = (r0 + r1 + r1) / 3;
-
         int g0 = c0.rgb_g;
-        int g1 = c1.rgb_g;
-        int g2 = (g0 + g0 + g1) / 3;
-        int g3 = (g0 + g1 + g1) / 3;
-
         int b0 = c0.rgb_b;
+
+        int r1 = c1.rgb_r;
+        int g1 = c1.rgb_g;
         int b1 = c1.rgb_b;
-        int b2 = (b0 + b0 + b1) / 3;
-        int b3 = (b0 + b1 + b1) / 3;
+
+        int r2 = Math.min(Math.round((1f * (r0 + r0 + r1)) / 3f), 255);
+        int r3 = Math.min(Math.round((1f * (r0 + r1 + r1)) / 3f), 255);
+
+        int g2 = Math.min(Math.round((1f * (g0 + g0 + g1)) / 3f), 255);
+        int g3 = Math.min(Math.round((1f * (g0 + g1 + g1)) / 3f), 255);
+
+        int b2 = Math.min(Math.round((1f * (b0 + b0 + b1)) / 3f), 255);
+        int b3 = Math.min(Math.round((1f * (b0 + b1 + b1)) / 3f), 255);
 
         this.colors[1] = c0.rgb;
         this.colors[0] = c1.rgb;

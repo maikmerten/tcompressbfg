@@ -10,39 +10,19 @@ public class Color16 {
     private final static int GSHIFT = 8 + 2;
     private final static int BSHIFT = 0 + 3;
     private final static double MAXVAR = 31 + 63 + 31;
-    private final boolean ROUND = true;
+
     short r, g, b;
     int rgb_r, rgb_g, rgb_b;
     int rgb;
 
     public Color16(int rgb) {
         int r_orig = (rgb & 0xFF0000) >> 16;
-        r = (short) ((r_orig) >> 3);
-        if (r < 31 && ROUND) {
-            short r2 = (short) (r + 1);
-            int r2diff = (r2 << 3) - r_orig;
-            int rdiff = r_orig - (r << 3);
-            r = r2diff < rdiff ? r2 : r;
-        }
-
         int g_orig = (rgb & 0xFF00) >> 8;
-        g = (short) (g_orig >> 2);
-        if (g < 63 && ROUND) {
-            short g2 = (short) (g + 1);
-            int g2diff = (g2 << 2) - g_orig;
-            int gdiff = (g_orig) - (g << 2);
-            g = g2diff < gdiff ? g2 : g;
-        }
-
         int b_orig = (rgb & 0xFF);
-        b = (short) (b_orig >> 3);
-        if (b < 31 && ROUND) {
-            short b2 = (short) (b + 1);
-            int b2diff = (b2 << 3) - b_orig;
-            int bdiff = (b_orig) - (b << 3);
-            b = b2diff < bdiff ? b2 : b;
-        }
 
+        r = (short) Math.min(Math.round((1f * r_orig) / 8), 31);
+        g = (short) Math.min(Math.round((1f * g_orig) / 4), 63);
+        b = (short) Math.min(Math.round((1f * b_orig) / 8), 31);
 
         computeRGB();
     }
