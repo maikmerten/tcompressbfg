@@ -16,8 +16,6 @@ public class Block4x4 {
     private byte[] colorIndices = new byte[16];
     private Color16 c0, c1;
     int[] colors = new int[4];
-    private int searchrange = 1;
-    private int interpolatepower = 0;
 
     public Block4x4(int[] rgbdata) {
         if (rgbdata.length != 16) {
@@ -25,9 +23,11 @@ public class Block4x4 {
         }
 
         this.rgbdata = rgbdata;
+    }
 
+    public void compress(int dither, int interpolate) {
         int[] interpolatedrgb = rgbdata;
-        for (int i = 0; i < interpolatepower; ++i) {
+        for (int i = 0; i < interpolate; ++i) {
             interpolatedrgb = RGBUtil.interpolate(interpolatedrgb);
         }
 
@@ -42,15 +42,17 @@ public class Block4x4 {
             }
         }
 
-        if (searchrange > 0) {
+        if (dither > 0) {
             List<Color16> wigglecolors = new ArrayList<Color16>();
             for (Color16 basecolor : colorcandidates) {
-                for (int roff = -searchrange; roff <= searchrange; ++roff) {
-                    for (int goff = -searchrange; goff <= searchrange; ++goff) {
-                        for (int boff = -searchrange; boff <= searchrange; ++boff) {
-                            Color16 newcolor = new Color16(basecolor);
-                            newcolor.applyOffset(roff, goff, boff);
-                            wigglecolors.add(newcolor);
+                for (int roff = -dither; roff <= dither; ++roff) {
+                    for (int goff = -dither; goff <= dither; ++goff) {
+                        for (int boff = -dither; boff <= dither; ++boff) {
+                            if ((roff | goff | roff) != 0) {
+                                Color16 newcolor = new Color16(basecolor);
+                                newcolor.applyOffset(roff, goff, boff);
+                                wigglecolors.add(newcolor);
+                            }
                         }
                     }
                 }
@@ -63,9 +65,6 @@ public class Block4x4 {
                 }
             }
         }
-
-        System.out.println(colorcandidates.size());
-
 
         double minerror = Integer.MAX_VALUE;
         Color16 bestc0 = colorcandidates.get(0);

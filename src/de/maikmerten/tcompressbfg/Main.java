@@ -35,6 +35,7 @@ public class Main {
                 }
 
                 Block4x4 block = new Block4x4(rgbdata);
+                block.compress(1, 0);
 
                 int[] rgbdata2 = block.getRGBData();
                 for (int xoffset = 0; xoffset < 4; ++xoffset) {
