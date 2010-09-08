@@ -17,7 +17,7 @@ import javax.imageio.ImageIO;
  */
 public class Compressor {
 
-    public final static boolean DEBUG = true;
+    public final static boolean DEBUG = false;
     private int blockcnt, processed;
 
     public void compressImage(BufferedImage bimage, DataOutputStream dos) {
