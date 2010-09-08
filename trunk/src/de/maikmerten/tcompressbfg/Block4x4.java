@@ -66,7 +66,6 @@ public class Block4x4 {
 
                 if(oldbestc0.rgb == refcolors[0].rgb && oldbestc1.rgb == refcolors[1].rgb) {
                     // fixpoint reached
-                    System.out.println(i);
                     break;
                 }
                 oldbestc0 = refcolors[0];
