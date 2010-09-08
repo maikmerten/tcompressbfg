@@ -78,7 +78,7 @@ public class Block4x4 {
 
                 computeColors();
                 pickColorIndex();
-                double error = RGBUtil.getRGBDistance(rgbdata, getRGBData());
+                double error = RGBUtil.getRGBDistanceMSE(rgbdata, getRGBData());
 
                 if (error < minerror) {
                     minerror = error;
@@ -135,7 +135,7 @@ public class Block4x4 {
             for (byte idx = 0; idx < 4; ++idx) {
                 int palettecolor = colors[idx];
 
-                double error = RGBUtil.getRGBDistance(datacolor, palettecolor);
+                double error = RGBUtil.getRGBDistanceSquared(datacolor, palettecolor);
                 if (error < minerror) {
                     minerror = error;
                     minidx = idx;
