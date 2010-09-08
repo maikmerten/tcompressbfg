@@ -1,5 +1,6 @@
 package de.maikmerten.tcompressbfg;
 
+import de.maikmerten.tcompressbfg.dds.DDSHeader;
 import java.awt.image.BufferedImage;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -16,13 +17,24 @@ public class Main {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws Exception {
-        File f = new File(args[0]);
+        String inputfilename = args[0];
+
+        String outputfilename = inputfilename.substring(0, inputfilename.lastIndexOf(".")) + ".dds";
+        System.out.println("Writing to " + outputfilename);
+
+        File f = new File(inputfilename);
 
         BufferedImage bimage = ImageIO.read(f);
 
-        // while we don't write proper DDS files, dump data here
-        FileOutputStream fos = new FileOutputStream(new File("/tmp/test.dat"));
+        
+        FileOutputStream fos = new FileOutputStream(new File(outputfilename));
         DataOutputStream dos = new DataOutputStream(fos);
+
+
+        DDSHeader header = new DDSHeader();
+        header.width = bimage.getWidth();
+        header.height = bimage.getHeight();
+        header.writeBytes(dos);
 
         new Compressor().compressImage(bimage, dos);
 
