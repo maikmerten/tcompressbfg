@@ -16,13 +16,9 @@ public class Color16 {
     int rgb;
 
     public Color16(int rgb) {
-        int r_orig = (rgb & 0xFF0000) >> 16;
-        int g_orig = (rgb & 0xFF00) >> 8;
-        int b_orig = (rgb & 0xFF);
-
-        r = (short) Math.min(Math.round((1f * r_orig) / 8), 31);
-        g = (short) Math.min(Math.round((1f * g_orig) / 4), 63);
-        b = (short) Math.min(Math.round((1f * b_orig) / 8), 31);
+        r = (short) ((rgb & 0xFF0000) >> 19);
+        g = (short) ((rgb & 0xFF00) >> 10);
+        b = (short) ((rgb & 0xFF) >> 3);
 
         computeRGB();
     }
@@ -54,10 +50,11 @@ public class Color16 {
     }
 
     private void computeRGB() {
-        rgb_r = r << 3;
-        rgb_g = g << 2;
-        rgb_b = b << 3;
-        rgb = r << RSHIFT | g << GSHIFT | b << BSHIFT;
+        rgb_r = (r * 255) / 31;
+        rgb_g = (g * 255) / 63;
+        rgb_b = (b * 255) / 31;
+
+        rgb = rgb_r << 16 | rgb_g << 8 | rgb_b;
     }
 
     public void applyOffset(int ro, int go, int bo) {
