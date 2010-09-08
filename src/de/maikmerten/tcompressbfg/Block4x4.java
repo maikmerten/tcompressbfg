@@ -15,6 +15,7 @@ public class Block4x4 {
     private int[] rgbdata;
     private byte[] colorIndices = new byte[16];
     private Color16 c0, c1;
+    private boolean iterative = true;
     int[] colors = new int[4];
 
     public Block4x4(int[] rgbdata) {
@@ -42,6 +43,50 @@ public class Block4x4 {
             }
         }
 
+        Color16[] refcolors = null;
+
+        if (!iterative) {
+            dither(dither, colorcandidates, colorset);
+            refcolors = pickReferenceColors(colorcandidates);
+        } else {
+            // pick best candidates of original colors
+            refcolors = pickReferenceColors(colorcandidates);
+
+            Color16 oldbestc0 = refcolors[0];
+            Color16 oldbestc1 = refcolors[1];
+            // then dither and repeat
+            for (int i = 0; i < 8; ++i) {
+                colorset.clear();
+                colorcandidates.clear();
+                colorcandidates.add(refcolors[0]);
+                colorcandidates.add(refcolors[1]);
+                colorset.addAll(colorcandidates);
+                dither(dither, colorcandidates, colorset);
+                refcolors = pickReferenceColors(colorcandidates);
+
+                if(oldbestc0.rgb == refcolors[0].rgb && oldbestc1.rgb == refcolors[1].rgb) {
+                    // fixpoint reached
+                    System.out.println(i);
+                    break;
+                }
+                oldbestc0 = refcolors[0];
+                oldbestc1 = refcolors[1];
+            }
+        }
+
+
+        this.c0 = refcolors[0];
+        this.c1 = refcolors[1];
+        if (c0.rgb > c1.rgb) {
+            c0 = refcolors[1];
+            c1 = refcolors[0];
+        }
+
+        computeColors();
+        pickColorIndex();
+    }
+
+    private void dither(int dither, List<Color16> colorcandidates, Set<Color16> colorset) {
         if (dither > 0) {
             List<Color16> wigglecolors = new ArrayList<Color16>();
             for (Color16 basecolor : colorcandidates) {
@@ -66,6 +111,9 @@ public class Block4x4 {
             }
         }
 
+    }
+
+    private Color16[] pickReferenceColors(List<Color16> colorcandidates) {
         double minerror = Integer.MAX_VALUE;
         Color16 bestc0 = colorcandidates.get(0);
         Color16 bestc1 = colorcandidates.get(0);
@@ -88,16 +136,7 @@ public class Block4x4 {
             }
         }
 
-        this.c0 = bestc0;
-        this.c1 = bestc1;
-
-        if (c0.rgb > c1.rgb) {
-            c0 = bestc1;
-            c1 = bestc0;
-        }
-
-        computeColors();
-        pickColorIndex();
+        return new Color16[]{bestc0, bestc1};
     }
 
     private void computeColors() {
