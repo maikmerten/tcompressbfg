@@ -22,7 +22,7 @@ public class Compressor {
 
     public void compressImage(BufferedImage bimage, DataOutputStream dos) {
 
-        Block4x4[][] blocks = new Block4x4[(bimage.getHeight() / 4)][(bimage.getWidth() / 4)];
+        Block4x4[][] blocks = new Block4x4[Math.max((bimage.getHeight() / 4), 1)][Math.max((bimage.getWidth() / 4), 1)];
         Queue<Block4x4> jobs = new LinkedList<Block4x4>();
 
         System.out.println("Chopping up image...");
@@ -32,13 +32,13 @@ public class Compressor {
 
                 for (int xoffset = 0; xoffset < 4; ++xoffset) {
                     for (int yoffset = 0; yoffset < 4; ++yoffset) {
-                        rgbdata[(yoffset * 4) + xoffset] = bimage.getRGB(x + xoffset, y + yoffset);
+                        rgbdata[(yoffset * 4) + xoffset] = bimage.getRGB((x + xoffset) % bimage.getWidth(), (y + yoffset) % bimage.getHeight());
                     }
                 }
 
                 Block4x4 block = new Block4x4(rgbdata);
 
-                blocks[x / 4][y / 4] = block;
+                blocks[y / 4][x / 4] = block;
                 jobs.add(block);
             }
         }
@@ -67,7 +67,7 @@ public class Compressor {
         for (int i = 0; i < blocks.length; ++i) {
             for (int j = 0; j < blocks[0].length; ++j) {
                 try {
-                    blocks[j][i].writeBytes(dos);
+                    blocks[i][j].writeBytes(dos);
 
                 } catch (Exception ex) {
                     Logger.getLogger(Compressor.class.getName()).log(Level.SEVERE, null, ex);
