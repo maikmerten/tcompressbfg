@@ -237,8 +237,7 @@ public class Block4x4 {
             ByteWriter.write16Little(bits, ds);
 
             long lbits = 0;
-
-            for(int i = alphaIndices.length - 1; i >= 0; --i) {
+            for (int i = alphaIndices.length - 1; i >= 0; --i) {
                 lbits = lbits << 3;
                 lbits = lbits | alphaIndices[i];
             }
@@ -253,23 +252,10 @@ public class Block4x4 {
 
         ByteWriter.write32Little(bits, ds);
 
-
-        bits = colorIndices[0]
-                | colorIndices[1] << 2
-                | colorIndices[2] << 4
-                | colorIndices[3] << 6
-                | colorIndices[4] << 8
-                | colorIndices[5] << 10
-                | colorIndices[6] << 12
-                | colorIndices[7] << 14
-                | colorIndices[8] << 16
-                | colorIndices[9] << 18
-                | colorIndices[10] << 20
-                | colorIndices[11] << 22
-                | colorIndices[12] << 24
-                | colorIndices[13] << 26
-                | colorIndices[14] << 28
-                | colorIndices[15] << 30;
+        for (int i = colorIndices.length - 1; i >= 0; --i) {
+            bits = bits << 2;
+            bits = bits | colorIndices[i];
+        }
 
         ByteWriter.write32Little(bits, ds);
 
