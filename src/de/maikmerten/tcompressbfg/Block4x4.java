@@ -207,7 +207,6 @@ public class Block4x4 {
         alphaIndices = new byte[rgbdata.length];
         for (int i = 0; i < alphaIndices.length; ++i) {
             int alpha = (rgbdata[i] >> 24) & 0xFF;
-            System.out.println(alpha);
             int minerror = Integer.MAX_VALUE;
             for (byte alphaidx = 0; alphaidx < alphavalues.length; ++alphaidx) {
                 int error = Math.abs(alphavalues[alphaidx] - alpha);
