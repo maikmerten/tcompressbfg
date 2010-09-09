@@ -20,7 +20,7 @@ public class Compressor {
     public final static boolean DEBUG = false;
     private int blockcnt, processed;
 
-    public void compressImage(BufferedImage bimage, DataOutputStream dos) {
+    public void compressImage(BufferedImage bimage, boolean alphachannel, DataOutputStream dos) {
 
         Block4x4[][] blocks = new Block4x4[Math.max((bimage.getHeight() / 4), 1)][Math.max((bimage.getWidth() / 4), 1)];
         Queue<Block4x4> jobs = new LinkedList<Block4x4>();
@@ -36,7 +36,7 @@ public class Compressor {
                     }
                 }
 
-                Block4x4 block = new Block4x4(rgbdata);
+                Block4x4 block = new Block4x4(rgbdata, alphachannel);
 
                 blocks[y / 4][x / 4] = block;
                 jobs.add(block);
