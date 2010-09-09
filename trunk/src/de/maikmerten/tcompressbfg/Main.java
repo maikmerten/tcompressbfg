@@ -21,6 +21,7 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
         boolean mipmaps = true;
+        boolean alphachannel = false;
         String inputfilename = args[0];
         String outputfilename = inputfilename.substring(0, inputfilename.lastIndexOf(".")) + ".dds";
 
@@ -41,6 +42,10 @@ public class Main {
             mipmaps = false;
         }
 
+        if(bimage.getType() == BufferedImage.TYPE_4BYTE_ABGR) {
+            System.out.println("### Image has alpha channel ###");
+            alphachannel = true;
+        }
 
         List<BufferedImage> mips = new LinkedList<BufferedImage>();
         mips.add(bimage);
@@ -77,6 +82,12 @@ public class Main {
         header.width = bimage.getWidth();
         header.height = bimage.getHeight();
 
+        if(alphachannel) {
+            header.pixelformat.fourcc = "DXT5";
+            header.pixelformat.hasalpha = true;
+            header.bytesperblock = 16;
+        }
+
         if (mips.size() > 1) {
             header.mipmaps = mips.size();
         }
@@ -86,7 +97,7 @@ public class Main {
 
 
         for (BufferedImage mip : mips) {
-            new Compressor().compressImage(mip, dos);
+            new Compressor().compressImage(mip, alphachannel, dos);
         }
 
         fos.close();

@@ -84,7 +84,7 @@ public class RGBUtil {
 
     public static double getRGBDistanceMSE(int[] rgbdata1, int[] rgbdata2) {
         int error = 0;
-        for(int i = 0; i < rgbdata1.length; ++i) {
+        for (int i = 0; i < rgbdata1.length; ++i) {
             int rgb1 = rgbdata1[i];
             int rgb2 = rgbdata2[i];
             int rgbdist = getRGBDistance(rgb1, rgb2);
@@ -118,5 +118,25 @@ public class RGBUtil {
             result[(i * 2) + 1] = (r3 << 16) | (g3 << 8) | (b3);
         }
         return result;
+    }
+
+    public static int[] getMinMaxAlpha(int[] argb) {
+        int min = Integer.MAX_VALUE;
+        int max = Integer.MIN_VALUE;
+
+        for (int i = 0; i < argb.length; ++i) {
+            int alpha = (argb[i] >> 24) & 0xFF;
+            if (alpha < min) {
+                min = alpha;
+            }
+
+            if (alpha > max) {
+                max = alpha;
+            }
+
+        }
+
+
+        return new int[]{min, max};
     }
 }

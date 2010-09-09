@@ -16,14 +16,18 @@ public class Block4x4 {
     private byte[] colorIndices = new byte[16];
     private Color16 c0, c1;
     private boolean iterative = true;
+    private boolean alphachannel;
     int[] colors = new int[4];
+    int[] alphavalues;
+    byte[] alphaIndices;
 
-    public Block4x4(int[] rgbdata) {
+    public Block4x4(int[] rgbdata, boolean alphachannel) {
         if (rgbdata.length != 16) {
             throw new RuntimeException("expecting 16 RGB values!");
         }
 
         this.rgbdata = rgbdata;
+        this.alphachannel = alphachannel;
     }
 
     public void compress(int dither, int interpolate) {
@@ -64,7 +68,7 @@ public class Block4x4 {
                 dither(dither, colorcandidates, colorset);
                 refcolors = pickReferenceColors(colorcandidates);
 
-                if(oldbestc0.rgb == refcolors[0].rgb && oldbestc1.rgb == refcolors[1].rgb) {
+                if (oldbestc0.rgb == refcolors[0].rgb && oldbestc1.rgb == refcolors[1].rgb) {
                     // fixpoint reached
                     break;
                 }
@@ -80,9 +84,13 @@ public class Block4x4 {
             c0 = refcolors[1];
             c1 = refcolors[0];
         }
-
         computeColors();
         pickColorIndex();
+
+        if (alphachannel) {
+            computeAlphaValues(RGBUtil.getMinMaxAlpha(rgbdata));
+            pickAlphaIndex();
+        }
     }
 
     private void dither(int dither, List<Color16> colorcandidates, Set<Color16> colorset) {
@@ -163,6 +171,17 @@ public class Block4x4 {
         this.colors[2] = (r3 << 16) | (g3 << 8) | b3;
     }
 
+    private void computeAlphaValues(int[] alphaminmax) {
+        alphavalues = new int[8];
+        alphavalues[0] = alphaminmax[1];
+        alphavalues[1] = alphaminmax[0];
+
+        for (int i = 1; i <= 6; ++i) {
+            alphavalues[i + 1] = (((7 - i) * alphavalues[0]) + (i * alphavalues[1])) / 7;
+        }
+
+    }
+
     private void pickColorIndex() {
 
         for (int i = 0; i < rgbdata.length; ++i) {
@@ -184,6 +203,22 @@ public class Block4x4 {
         }
     }
 
+    private void pickAlphaIndex() {
+        alphaIndices = new byte[rgbdata.length];
+        for (int i = 0; i < alphaIndices.length; ++i) {
+            int alpha = (rgbdata[i] >> 24) & 0xFF;
+            System.out.println(alpha);
+            int minerror = Integer.MAX_VALUE;
+            for (byte alphaidx = 0; alphaidx < alphavalues.length; ++alphaidx) {
+                int error = Math.abs(alphavalues[alphaidx] - alpha);
+                if (error < minerror) {
+                    minerror = error;
+                    alphaIndices[i] = alphaidx;
+                }
+            }
+        }
+    }
+
     public final int[] getRGBData() {
         int[] result = new int[16];
 
@@ -197,6 +232,22 @@ public class Block4x4 {
 
     public void writeBytes(DataOutputStream ds) throws Exception {
         int bits = 0;
+
+        if (alphachannel) {
+            bits = alphavalues[1] << 8 | alphavalues[0];
+            ByteWriter.write16Little(bits, ds);
+
+            long lbits = 0;
+
+            for(int i = alphaIndices.length - 1; i >= 0; --i) {
+                lbits = lbits << 3;
+                lbits = lbits | alphaIndices[i];
+            }
+
+            ByteWriter.write48Little(lbits, ds);
+        }
+
+
         bits = c0.r << 11 | c0.g << 5 | c0.b;
         bits = bits << 16;
         bits = bits | c1.r << 11 | c1.g << 5 | c1.b;
@@ -204,7 +255,6 @@ public class Block4x4 {
         ByteWriter.write32Little(bits, ds);
 
 
-        bits = 0;
         bits = colorIndices[0]
                 | colorIndices[1] << 2
                 | colorIndices[2] << 4
