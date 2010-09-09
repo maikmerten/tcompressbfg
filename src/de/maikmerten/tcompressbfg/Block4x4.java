@@ -133,7 +133,7 @@ public class Block4x4 {
 
                 computeColors();
                 pickColorIndex();
-                double error = RGBUtil.getRGBDistanceMSE(rgbdata, getRGBData());
+                double error = RGBUtil.getRGBDistanceMSELuminance(rgbdata, getRGBData());
 
                 if (error < minerror) {
                     minerror = error;
