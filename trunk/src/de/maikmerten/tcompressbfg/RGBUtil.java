@@ -21,15 +21,12 @@ public class RGBUtil {
 
     public static int getRGBDistanceSquared(int rgb1, int rgb2) {
         int rdiff = ((rgb1 & 0xFF0000) >> 16) - (((rgb2 & 0xFF0000) >> 16));
-        rdiff = rdiff < 0 ? -rdiff : rdiff;
         rdiff *= rdiff;
 
         int gdiff = ((rgb1 & 0xFF00) >> 8) - (((rgb2 & 0xFF00) >> 8));
-        gdiff = gdiff < 0 ? -gdiff : gdiff;
         gdiff *= gdiff;
 
         int bdiff = (rgb1 & 0xFF) - (rgb2 & 0xFF);
-        bdiff = bdiff < 0 ? -bdiff : bdiff;
         bdiff *= bdiff;
 
         return rdiff + gdiff + bdiff;
@@ -83,16 +80,15 @@ public class RGBUtil {
     }
 
     public static double getRGBDistanceMSE(int[] rgbdata1, int[] rgbdata2) {
-        int error = 0;
+        double error = 0;
         for (int i = 0; i < rgbdata1.length; ++i) {
             int rgb1 = rgbdata1[i];
             int rgb2 = rgbdata2[i];
-            int rgbdist = getRGBDistance(rgb1, rgb2);
+            double rgbdist = getRGBDistance(rgb1, rgb2);
             error += (rgbdist * rgbdist);
         }
 
-        return (error * 1.0) / (3.0 * rgbdata1.length);
-
+        return error / (3.0 * rgbdata1.length);
     }
 
     public static int[] interpolate(int[] rgbdata) {
