@@ -19,6 +19,15 @@ public class RGBUtil {
         return rdiff + gdiff + bdiff;
     }
 
+    public static int getRGBDistance(int[] rgbdata1, int[] rgbdata2) {
+        int distance = 0;
+        for (int i = 0; i < rgbdata1.length; ++i) {
+            distance += getRGBDistance(rgbdata1[i], rgbdata2[i]);
+        }
+
+        return distance;
+    }
+
     public static int getRGBDistanceLuminance(int rgb1, int rgb2) {
         int r1 = (rgb1 >> 16) & 0xFF;
         int g1 = (rgb1 >> 8) & 0xFF;
@@ -46,6 +55,18 @@ public class RGBUtil {
         return rdiff + gdiff + bdiff + ldiff;
     }
 
+    public static double getSquaredRGBDistanceLuminance(int[] rgbdata1, int[] rgbdata2) {
+        double error = 0;
+        for (int i = 0; i < rgbdata1.length; ++i) {
+            int rgb1 = rgbdata1[i];
+            int rgb2 = rgbdata2[i];
+            double rgbdist = getRGBDistanceLuminance(rgb1, rgb2);
+            error += (rgbdist * rgbdist);
+        }
+
+        return error;
+    }
+
     public static int getRGBDistanceSquared(int rgb1, int rgb2) {
         int rdiff = ((rgb1 & 0xFF0000) >> 16) - (((rgb2 & 0xFF0000) >> 16));
         rdiff *= rdiff;
@@ -59,35 +80,6 @@ public class RGBUtil {
         return rdiff + gdiff + bdiff;
     }
 
-    public static double getRGBDistanceCrossProduct(int rgb1, int rgb2) {
-        int a1 = ((rgb1 & 0xFF0000) >> 16);
-        int a2 = ((rgb1 & 0xFF00) >> 8);
-        int a3 = rgb1 & 0xFF;
-
-
-        int b1 = ((rgb2 & 0xFF0000) >> 16);
-        int b2 = ((rgb2 & 0xFF00) >> 8);
-        int b3 = rgb2 & 0xFF;
-
-        int c1 = a2 * b3 - a3 * b2;
-        c1 *= c1;
-        int c2 = a3 * b1 - a1 * b3;
-        c2 *= c2;
-        int c3 = a1 * b2 - a2 * b1;
-        c3 *= c3;
-
-        return Math.sqrt(c1 + c2 + c3);
-    }
-
-    public static int getRGBDistance(int[] rgbdata1, int[] rgbdata2) {
-        int distance = 0;
-        for (int i = 0; i < rgbdata1.length; ++i) {
-            distance += getRGBDistance(rgbdata1[i], rgbdata2[i]);
-        }
-
-        return distance;
-    }
-
     public static int getRGBDistanceSquared(int[] rgbdata1, int[] rgbdata2) {
         int distance = 0;
         for (int i = 0; i < rgbdata1.length; ++i) {
@@ -95,39 +87,6 @@ public class RGBUtil {
         }
 
         return distance;
-    }
-
-    public static double getRGBDistanceCrossProduct(int[] rgbdata1, int[] rgbdata2) {
-        double distance = 0;
-        for (int i = 0; i < rgbdata1.length; ++i) {
-            distance += getRGBDistanceCrossProduct(rgbdata1[i], rgbdata2[i]);
-        }
-
-        return distance;
-    }
-
-    public static double getRGBDistanceMSE(int[] rgbdata1, int[] rgbdata2) {
-        double error = 0;
-        for (int i = 0; i < rgbdata1.length; ++i) {
-            int rgb1 = rgbdata1[i];
-            int rgb2 = rgbdata2[i];
-            double rgbdist = getRGBDistance(rgb1, rgb2);
-            error += (rgbdist * rgbdist);
-        }
-
-        return error / (3.0 * rgbdata1.length);
-    }
-
-    public static double getRGBDistanceMSELuminance(int[] rgbdata1, int[] rgbdata2) {
-        double error = 0;
-        for (int i = 0; i < rgbdata1.length; ++i) {
-            int rgb1 = rgbdata1[i];
-            int rgb2 = rgbdata2[i];
-            double rgbdist = getRGBDistanceLuminance(rgb1, rgb2);
-            error += (rgbdist * rgbdist);
-        }
-
-        return error / (3.0 * rgbdata1.length);
     }
 
     public static int[] interpolate(int[] rgbdata) {
