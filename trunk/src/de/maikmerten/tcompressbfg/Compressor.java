@@ -17,7 +17,7 @@ import javax.imageio.ImageIO;
  */
 public class Compressor {
 
-    public final static boolean DEBUG = false;
+    public boolean debug = false;
     private int blockcnt, processed;
 
     public void compressImage(BufferedImage bimage, DataOutputStream dos, CompressorConfig config) {
@@ -43,6 +43,7 @@ public class Compressor {
             }
         }
 
+        processed = 0;
         blockcnt = jobs.size();
 
         List<Thread> threads = new LinkedList<Thread>();
@@ -76,26 +77,25 @@ public class Compressor {
         }
 
 
-        if (DEBUG) {
+        if (debug) {
             for (int x = 0; x < bimage.getWidth(); x = x + 4) {
                 for (int y = 0; y < bimage.getHeight(); y = y + 4) {
                     Block4x4 block = blocks[x / 4][y / 4];
-                    int[] rgbdata2 = block.getRGBData();
+                    int[] rgbdata2 = block.getDecompresedRGBData();
                     for (int xoffset = 0; xoffset < 4; ++xoffset) {
                         for (int yoffset = 0; yoffset < 4; ++yoffset) {
-                            bimage.setRGB(x + xoffset, y + yoffset, rgbdata2[(yoffset * 4) + xoffset]);
+                            bimage.setRGB(y + yoffset, x + xoffset, rgbdata2[(xoffset * 4) + yoffset]);
                         }
                     }
-
                 }
             }
 
             try {
                 ImageIO.write(bimage, "png", new File("/tmp/s3tc.png"));
-                dos.close();
             } catch (IOException ex) {
                 Logger.getLogger(Compressor.class.getName()).log(Level.SEVERE, null, ex);
             }
+            debug = false; // only write mip0
         }
 
     }

@@ -7,9 +7,10 @@ package de.maikmerten.tcompressbfg;
 public class RGBUtil {
 
     private static double[] acostable = new double[20001];
+
     static {
-        for(int i = 0; i <= 20000; ++i) {
-            double val = ((i * 1d) / 10000d) -1d;
+        for (int i = 0; i <= 20000; ++i) {
+            double val = ((i * 1d) / 10000d) - 1d;
             acostable[i] = Math.acos(val);
         }
     }
@@ -121,7 +122,7 @@ public class RGBUtil {
         double dotprod = (r1 * r2) + (g1 * g2) + (b1 * b2);
 
         //double acos = Math.acos(dotprod);
-        double acos = acostable[Math.round((float)(dotprod * 10000d)) + 10000];
+        double acos = acostable[Math.round((float) (dotprod * 10000d)) + 10000];
 
         return acos;
 
@@ -180,5 +181,27 @@ public class RGBUtil {
 
 
         return new int[]{min, max};
+    }
+
+    public static void normalizeNormals(int[] rgb) {
+        for (int i = 0; i < rgb.length; ++i) {
+            int rgbval = rgb[i];
+
+            double r1 = ((rgbval >> 16) & 0xFF) / 255d;
+            double g1 = ((rgbval >> 8) & 0xFF) / 255d;
+            double b1 = (rgbval & 0xFF) / 255d;
+
+            double len = Math.sqrt((r1 * r1) + (g1 * g1) + (b1 * b1));
+            r1 = r1 / len;
+            g1 = g1 / len;
+            b1 = b1 / len;
+
+            int r = Math.round((float)(r1 * 255d));
+            int g = Math.round((float)(g1 * 255d));
+            int b = Math.round((float)(b1 * 255d));
+
+            rgb[i] = (r << 16) | (g << 8) | b;
+        }
+
     }
 }
