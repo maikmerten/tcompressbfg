@@ -2,14 +2,11 @@ package de.maikmerten.tcompressbfg;
 
 import java.awt.image.BufferedImage;
 import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.imageio.ImageIO;
 
 /**
  *
@@ -17,7 +14,6 @@ import javax.imageio.ImageIO;
  */
 public class Compressor {
 
-    public boolean debug = false;
     private int blockcnt, processed;
 
     public void compressImage(BufferedImage bimage, DataOutputStream dos, CompressorConfig config) {
@@ -74,28 +70,6 @@ public class Compressor {
                     Logger.getLogger(Compressor.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
-        }
-
-
-        if (debug) {
-            for (int x = 0; x < bimage.getWidth(); x = x + 4) {
-                for (int y = 0; y < bimage.getHeight(); y = y + 4) {
-                    Block4x4 block = blocks[x / 4][y / 4];
-                    int[] rgbdata2 = block.getDecompresedRGBData();
-                    for (int xoffset = 0; xoffset < 4; ++xoffset) {
-                        for (int yoffset = 0; yoffset < 4; ++yoffset) {
-                            bimage.setRGB(y + yoffset, x + xoffset, rgbdata2[(xoffset * 4) + yoffset]);
-                        }
-                    }
-                }
-            }
-
-            try {
-                ImageIO.write(bimage, "png", new File("/tmp/s3tc.png"));
-            } catch (IOException ex) {
-                Logger.getLogger(Compressor.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            debug = false; // only write mip0
         }
 
     }

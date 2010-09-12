@@ -246,9 +246,6 @@ public class Block4x4 {
 
     public int[] getDecompresedRGBData() {
         computeRGBData();
-        if (config.texturetype == CompressorConfig.TEXTURENORMAL) {
-            RGBUtil.normalizeNormals(decompressedRGB);
-        }
         return decompressedRGB;
     }
 
