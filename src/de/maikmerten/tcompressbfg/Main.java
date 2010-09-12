@@ -108,8 +108,9 @@ public class Main {
             config.texturetype = CompressorConfig.TEXTURENORMAL;
         }
 
+        Compressor compressor = new Compressor();
         for (BufferedImage mip : mips) {
-            new Compressor().compressImage(mip, dos, config);
+            compressor.compressImage(mip, dos, config);
         }
 
         fos.close();
