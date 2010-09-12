@@ -18,18 +18,25 @@ import javax.imageio.ImageIO;
  */
 public class Main {
 
-
     public static void main(String[] args) throws Exception {
         boolean mipmaps = true;
         boolean alphachannel = false;
-        String inputfilename = args[0];
+        boolean normalmap = false;
+
+        for (int i = 0; i < args.length; ++i) {
+            if(args[i].equals("-normalmap")) {
+                normalmap = true;
+            }
+        }
+
+        String inputfilename = args[args.length - 1];
         String outputfilename = inputfilename.substring(0, inputfilename.lastIndexOf(".")) + ".dds";
 
         File f = new File(inputfilename);
 
         BufferedImage bimage = ImageIO.read(f);
 
-        if(bimage.getWidth() % 4 != 0 || bimage.getHeight() % 4 != 0) {
+        if (bimage.getWidth() % 4 != 0 || bimage.getHeight() % 4 != 0) {
             System.out.println("### Image dimensions are not multiples of four. Aborting. ###");
             System.exit(1);
         }
@@ -42,7 +49,7 @@ public class Main {
             mipmaps = false;
         }
 
-        if(bimage.getType() == BufferedImage.TYPE_4BYTE_ABGR) {
+        if (bimage.getType() == BufferedImage.TYPE_4BYTE_ABGR) {
             System.out.println("### Image has alpha channel ###");
             alphachannel = true;
         }
@@ -82,7 +89,7 @@ public class Main {
         header.width = bimage.getWidth();
         header.height = bimage.getHeight();
 
-        if(alphachannel) {
+        if (alphachannel) {
             header.pixelformat.fourcc = "DXT5";
             header.pixelformat.hasalpha = true;
             header.bytesperblock = 16;
@@ -97,7 +104,9 @@ public class Main {
 
         CompressorConfig config = new CompressorConfig();
         config.hasalpha = alphachannel;
-        config.texturetype = CompressorConfig.TEXTURENORMAL;
+        if (normalmap) {
+            config.texturetype = CompressorConfig.TEXTURENORMAL;
+        }
 
         for (BufferedImage mip : mips) {
             new Compressor().compressImage(mip, dos, config);
