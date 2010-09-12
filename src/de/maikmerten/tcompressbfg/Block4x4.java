@@ -12,27 +12,46 @@ import java.util.Set;
  */
 public class Block4x4 {
 
+    private CompressorConfig config;
     private int[] rgbdata;
     private byte[] colorIndices = new byte[16];
     private Color16 c0, c1;
     private boolean iterative = true;
-    private boolean alphachannel;
     int[] colors = new int[4];
     int[] alphavalues;
+    int[] decompressedRGB = new int[16];
     byte[] alphaIndices;
 
-    public Block4x4(int[] rgbdata, boolean alphachannel) {
+    public Block4x4(int[] rgbdata, CompressorConfig config) {
         if (rgbdata.length != 16) {
             throw new RuntimeException("expecting 16 RGB values!");
         }
 
         this.rgbdata = rgbdata;
-        this.alphachannel = alphachannel;
+        this.config = config;
     }
 
-    public void compress(int dither, int interpolate) {
+    private double computeBlockError(int[] block1, int[] block2) {
+        switch (config.texturetype) {
+            case (CompressorConfig.TEXTURENORMAL):
+                return RGBUtil.getRGBVectorAngle(block1, block2);
+            default:
+                return RGBUtil.getSquaredRGBDistanceLuminance(block1, block2);
+        }
+    }
+
+    private double computeTexelError(int texel1, int texel2) {
+        switch (config.texturetype) {
+            case (CompressorConfig.TEXTURENORMAL):
+                return RGBUtil.getRGBVectorAngle(texel1, texel2);
+            default:
+                return RGBUtil.getRGBDistanceSquared(texel1, texel2);
+        }
+    }
+
+    public void compress() {
         int[] interpolatedrgb = rgbdata;
-        for (int i = 0; i < interpolate; ++i) {
+        for (int i = 0; i < config.interpolatepower; ++i) {
             interpolatedrgb = RGBUtil.interpolate(interpolatedrgb);
         }
 
@@ -50,7 +69,7 @@ public class Block4x4 {
         Color16[] refcolors = null;
 
         if (!iterative) {
-            dither(dither, colorcandidates, colorset);
+            dither(config.dither, colorcandidates, colorset);
             refcolors = pickReferenceColors(colorcandidates);
         } else {
             // pick best candidates of original colors
@@ -65,7 +84,7 @@ public class Block4x4 {
                 colorcandidates.add(refcolors[0]);
                 colorcandidates.add(refcolors[1]);
                 colorset.addAll(colorcandidates);
-                dither(dither, colorcandidates, colorset);
+                dither(config.dither, colorcandidates, colorset);
                 refcolors = pickReferenceColors(colorcandidates);
 
                 if (oldbestc0.rgb == refcolors[0].rgb && oldbestc1.rgb == refcolors[1].rgb) {
@@ -87,7 +106,7 @@ public class Block4x4 {
         computeColors();
         pickColorIndex();
 
-        if (alphachannel) {
+        if (config.hasalpha) {
             computeAlphaValues(RGBUtil.getMinMaxAlpha(rgbdata));
             pickAlphaIndex();
         }
@@ -117,7 +136,6 @@ public class Block4x4 {
                 }
             }
         }
-
     }
 
     private Color16[] pickReferenceColors(List<Color16> colorcandidates) {
@@ -133,7 +151,8 @@ public class Block4x4 {
 
                 computeColors();
                 pickColorIndex();
-                double error = RGBUtil.getSquaredRGBDistanceLuminance(rgbdata, getRGBData());
+                computeRGBData();
+                double error = computeBlockError(rgbdata, decompressedRGB);
 
                 if (error < minerror) {
                     minerror = error;
@@ -192,7 +211,7 @@ public class Block4x4 {
             for (byte idx = 0; idx < 4; ++idx) {
                 int palettecolor = colors[idx];
 
-                double error = RGBUtil.getRGBDistanceSquared(datacolor, palettecolor);
+                double error = computeTexelError(datacolor, palettecolor);
                 if (error < minerror) {
                     minerror = error;
                     minidx = idx;
@@ -218,21 +237,22 @@ public class Block4x4 {
         }
     }
 
-    public final int[] getRGBData() {
-        int[] result = new int[16];
-
+    public final void computeRGBData() {
         for (int i = 0; i < colorIndices.length; ++i) {
             short index = colorIndices[i];
-            result[i] = colors[index];
+            decompressedRGB[i] = colors[index];
         }
+    }
 
-        return result;
+    public int[] getRGBData() {
+        computeRGBData();
+        return decompressedRGB;
     }
 
     public void writeBytes(DataOutputStream ds) throws Exception {
         int bits = 0;
 
-        if (alphachannel) {
+        if (config.hasalpha) {
             bits = alphavalues[1] << 8 | alphavalues[0];
             ByteWriter.write16Little(bits, ds);
 

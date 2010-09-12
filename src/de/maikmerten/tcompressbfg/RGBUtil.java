@@ -6,6 +6,14 @@ package de.maikmerten.tcompressbfg;
  */
 public class RGBUtil {
 
+    private static double[] acostable = new double[20001];
+    static {
+        for(int i = 0; i <= 20000; ++i) {
+            double val = ((i * 1d) / 10000d) -1d;
+            acostable[i] = Math.acos(val);
+        }
+    }
+
     public static int getRGBDistance(int rgb1, int rgb2) {
         int rdiff = ((rgb1 & 0xFF0000) >> 16) - (((rgb2 & 0xFF0000) >> 16));
         rdiff = rdiff < 0 ? -rdiff : rdiff;
@@ -87,6 +95,46 @@ public class RGBUtil {
         }
 
         return distance;
+    }
+
+    public static double getRGBVectorAngle(int rgb1, int rgb2) {
+        double r1 = ((rgb1 >> 16) & 0xFF) / 255d;
+        double g1 = ((rgb1 >> 8) & 0xFF) / 255d;
+        double b1 = (rgb1 & 0xFF) / 255d;
+
+        double len1 = Math.sqrt((r1 * r1) + (g1 * g1) + (b1 * b1));
+
+        r1 = r1 / len1;
+        g1 = g1 / len1;
+        b1 = b1 / len1;
+
+        double r2 = ((rgb2 >> 16) & 0xFF) / 255d;
+        double g2 = ((rgb2 >> 8) & 0xFF) / 255d;
+        double b2 = (rgb2 & 0xFF) / 255d;
+
+        double len2 = Math.sqrt((r2 * r2) + (g2 * g2) + (b2 * b2));
+
+        r2 = r2 / len2;
+        g2 = g2 / len2;
+        b2 = b2 / len2;
+
+        double dotprod = (r1 * r2) + (g1 * g2) + (b1 * b2);
+
+        //double acos = Math.acos(dotprod);
+        double acos = acostable[Math.round((float)(dotprod * 10000d)) + 10000];
+
+        return acos;
+
+    }
+
+    public static double getRGBVectorAngle(int[] rgb1, int[] rgb2) {
+        double error = 0;
+        for (int i = 0; i < rgb1.length; ++i) {
+            double angle = getRGBVectorAngle(rgb1[i], rgb2[i]);
+            error += (angle * angle);
+        }
+
+        return error;
     }
 
     public static int[] interpolate(int[] rgbdata) {

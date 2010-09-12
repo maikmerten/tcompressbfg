@@ -95,9 +95,12 @@ public class Main {
         System.out.println("Writing to " + outputfilename);
         header.writeBytes(dos);
 
+        CompressorConfig config = new CompressorConfig();
+        config.hasalpha = alphachannel;
+        config.texturetype = CompressorConfig.TEXTURENORMAL;
 
         for (BufferedImage mip : mips) {
-            new Compressor().compressImage(mip, alphachannel, dos);
+            new Compressor().compressImage(mip, dos, config);
         }
 
         fos.close();
