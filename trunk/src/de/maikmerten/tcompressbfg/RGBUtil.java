@@ -6,6 +6,76 @@ package de.maikmerten.tcompressbfg;
  */
 public class RGBUtil {
 
+    private static double[] convertRGBtoHSI(int rgb) {
+        double r = ((double) ((rgb >> 16) & 0xFF)) / 255d;
+        double g = ((double) ((rgb >> 8) & 0xFF)) / 255d;
+        double b = ((double) (rgb & 0xFF)) / 255d;
+
+        double max = Math.max(r, Math.max(g, b));
+        double min = Math.min(r, Math.min(g, b));
+        double c = max - min;
+
+        double h = 0;
+        double s = 0;
+        double i = 0;
+
+        if (c == 0) {
+        } else if (max == r) {
+            h = ((g - b) / c) % 6d;
+        } else if (max == g) {
+            h = ((b - r) / c) + 2;
+        } else if (max == b) {
+            h = ((r - g) / c) + 4;
+        }
+
+        h /= 6d;
+        i = (r * 0.3) + (g * 0.59) + (b * 0.11);
+
+        if (c == 0) {
+        } else {
+            s = 1d - (min / i);
+        }
+
+        return new double[]{h, s, i};
+    }
+
+    public static double getHSIDistance(int rgb1, int rgb2) {
+
+        double[] hsivals = convertRGBtoHSI(rgb1);
+        double h1 = hsivals[0];
+        double s1 = hsivals[1];
+        double i1 = hsivals[2];
+
+        hsivals = convertRGBtoHSI(rgb2);
+        double h2 = hsivals[0];
+        double s2 = hsivals[1];
+        double i2 = hsivals[2];
+
+        double hdiff = h1 - h2;
+        hdiff = hdiff < 0 ? h2 - h1 : hdiff;
+        double hq = 1d - hdiff;
+
+        double sdiff = s1 - s2;
+        sdiff = sdiff < 0 ? s2 - s1 : sdiff;
+        double sq = 1d - sdiff;
+
+
+        double idiff = i1 - i2;
+        idiff = idiff < 0 ? i2 - i1 : idiff;
+        double iq = 1d - idiff;
+
+
+        return -(hq + sq + (iq * 10));
+    }
+
+    public static double getHSIDistance(int[] rgbdata1, int[] rgbdata2) {
+        double distance = 0;
+        for (int i = 0; i < rgbdata1.length; ++i) {
+            distance += getHSIDistance(rgbdata1[i], rgbdata2[i]);
+        }
+        return distance;
+    }
+
     public static int getRGBDistance(int rgb1, int rgb2) {
         int rdiff = ((rgb1 & 0xFF0000) >> 16) - (((rgb2 & 0xFF0000) >> 16));
         rdiff = rdiff < 0 ? -rdiff : rdiff;
