@@ -65,7 +65,7 @@ public class RGBUtil {
         double iq = 1d - idiff;
 
 
-        return -(hq + sq + (iq * 10));
+        return -((hq * 50) + (sq * 100) + (iq * 1000));
     }
 
     public static double getHSIDistance(int[] rgbdata1, int[] rgbdata2) {
