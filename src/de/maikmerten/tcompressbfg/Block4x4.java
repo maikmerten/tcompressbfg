@@ -36,7 +36,8 @@ public class Block4x4 {
             case (CompressorConfig.TEXTURENORMAL):
                 return RGBUtil.getRGBVectorAngle(block1, block2);
             default:
-                return RGBUtil.getSquaredRGBDistanceLuminance(block1, block2);
+                //return RGBUtil.getSquaredRGBDistanceLuminance(block1, block2);
+                return RGBUtil.getHSIDistance(block1, block2);
         }
     }
 
@@ -46,6 +47,7 @@ public class Block4x4 {
                 return RGBUtil.getRGBVectorAngle(texel1, texel2);
             default:
                 return RGBUtil.getRGBDistanceSquared(texel1, texel2);
+                //return RGBUtil.getHSIDistance(texel1, texel2);
         }
     }
 
