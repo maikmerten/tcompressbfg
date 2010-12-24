@@ -13,5 +13,6 @@ public class CompressorConfig {
     public int dither = 1;
     public int interpolatepower = 0;
     public boolean hasalpha = false;
+    public boolean onlyreferencecolors = false;
 
 }

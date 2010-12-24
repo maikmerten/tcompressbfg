@@ -22,10 +22,14 @@ public class Main {
         boolean mipmaps = true;
         boolean alphachannel = false;
         boolean normalmap = false;
+        boolean onlyreferencecolors = false;
 
         for (int i = 0; i < args.length; ++i) {
-            if(args[i].equals("-normalmap")) {
+            if (args[i].equals("-normalmap")) {
                 normalmap = true;
+            }
+            if (args[i].equals("-onlyreferencecolors")) {
+                onlyreferencecolors = true;
             }
         }
 
@@ -107,6 +111,8 @@ public class Main {
         if (normalmap) {
             config.texturetype = CompressorConfig.TEXTURENORMAL;
         }
+
+        config.onlyreferencecolors = onlyreferencecolors;
 
         Compressor compressor = new Compressor();
         for (BufferedImage mip : mips) {

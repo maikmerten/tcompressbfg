@@ -47,7 +47,7 @@ public class Block4x4 {
                 return RGBUtil.getRGBVectorAngle(texel1, texel2);
             default:
                 return RGBUtil.getRGBDistanceSquared(texel1, texel2);
-                //return RGBUtil.getHSIDistance(texel1, texel2);
+            //return RGBUtil.getHSIDistance(texel1, texel2);
         }
     }
 
@@ -177,19 +177,22 @@ public class Block4x4 {
         int g1 = c1.rgb_g;
         int b1 = c1.rgb_b;
 
-        int r2 = Math.min(Math.round((1f * (r0 + r0 + r1)) / 3f), 255);
-        int r3 = Math.min(Math.round((1f * (r0 + r1 + r1)) / 3f), 255);
-
-        int g2 = Math.min(Math.round((1f * (g0 + g0 + g1)) / 3f), 255);
-        int g3 = Math.min(Math.round((1f * (g0 + g1 + g1)) / 3f), 255);
-
-        int b2 = Math.min(Math.round((1f * (b0 + b0 + b1)) / 3f), 255);
-        int b3 = Math.min(Math.round((1f * (b0 + b1 + b1)) / 3f), 255);
-
         this.colors[1] = c0.rgb;
         this.colors[0] = c1.rgb;
-        this.colors[3] = (r2 << 16) | (g2 << 8) | b2;
-        this.colors[2] = (r3 << 16) | (g3 << 8) | b3;
+
+        if (!config.onlyreferencecolors) {
+            int r2 = Math.min(Math.round((1f * (r0 + r0 + r1)) / 3f), 255);
+            int r3 = Math.min(Math.round((1f * (r0 + r1 + r1)) / 3f), 255);
+
+            int g2 = Math.min(Math.round((1f * (g0 + g0 + g1)) / 3f), 255);
+            int g3 = Math.min(Math.round((1f * (g0 + g1 + g1)) / 3f), 255);
+
+            int b2 = Math.min(Math.round((1f * (b0 + b0 + b1)) / 3f), 255);
+            int b3 = Math.min(Math.round((1f * (b0 + b1 + b1)) / 3f), 255);
+
+            this.colors[3] = (r2 << 16) | (g2 << 8) | b2;
+            this.colors[2] = (r3 << 16) | (g3 << 8) | b3;
+        }
     }
 
     private void computeAlphaValues(int[] alphaminmax) {
@@ -205,12 +208,14 @@ public class Block4x4 {
 
     private void pickColorIndex() {
 
+        int maxidx = config.onlyreferencecolors ? 2 : 4;
+
         for (int i = 0; i < rgbdata.length; ++i) {
             int datacolor = rgbdata[i];
 
             double minerror = Integer.MAX_VALUE;
             byte minidx = 0;
-            for (byte idx = 0; idx < 4; ++idx) {
+            for (byte idx = 0; idx < maxidx; ++idx) {
                 int palettecolor = colors[idx];
 
                 double error = computeTexelError(datacolor, palettecolor);
