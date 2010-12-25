@@ -10,9 +10,10 @@ public class CompressorConfig {
     public final static int TEXTURENORMAL = 2;
 
     public int texturetype = TEXTURECOLOR;
-    public int dither = 1;
+    public int colorsearchrange = 1;
     public int interpolatepower = 0;
     public boolean hasalpha = false;
     public boolean onlyreferencecolors = false;
+    public boolean dither = false;
 
 }
