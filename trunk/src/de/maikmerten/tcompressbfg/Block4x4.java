@@ -14,9 +14,9 @@ public class Block4x4 {
 
     private CompressorConfig config;
     private int[] rgbdata;
+    private int[] rgbdataCopy;
     private byte[] colorIndices = new byte[16];
     private Color16 c0, c1;
-    private boolean iterative = true;
     int[] colors = new int[4];
     int[] alphavalues;
     int[] decompressedRGB = new int[16];
@@ -28,6 +28,8 @@ public class Block4x4 {
         }
 
         this.rgbdata = rgbdata;
+        this.rgbdataCopy = new int[rgbdata.length];
+        System.arraycopy(rgbdata, 0, this.rgbdataCopy, 0, rgbdata.length);
         this.config = config;
     }
 
@@ -70,32 +72,27 @@ public class Block4x4 {
 
         Color16[] refcolors = null;
 
-        if (!iterative) {
-            dither(config.dither, colorcandidates, colorset);
-            refcolors = pickReferenceColors(colorcandidates);
-        } else {
-            // pick best candidates of original colors
+        // pick best candidates of original colors
+        refcolors = pickReferenceColors(colorcandidates);
+
+        Color16 oldbestc0 = refcolors[0];
+        Color16 oldbestc1 = refcolors[1];
+        // then dither and repeat
+        for (int i = 0; i < 8; ++i) {
+            colorset.clear();
+            colorcandidates.clear();
+            colorcandidates.add(refcolors[0]);
+            colorcandidates.add(refcolors[1]);
+            colorset.addAll(colorcandidates);
+            createNewColors(config.colorsearchrange, colorcandidates, colorset);
             refcolors = pickReferenceColors(colorcandidates);
 
-            Color16 oldbestc0 = refcolors[0];
-            Color16 oldbestc1 = refcolors[1];
-            // then dither and repeat
-            for (int i = 0; i < 8; ++i) {
-                colorset.clear();
-                colorcandidates.clear();
-                colorcandidates.add(refcolors[0]);
-                colorcandidates.add(refcolors[1]);
-                colorset.addAll(colorcandidates);
-                dither(config.dither, colorcandidates, colorset);
-                refcolors = pickReferenceColors(colorcandidates);
-
-                if (oldbestc0.rgb == refcolors[0].rgb && oldbestc1.rgb == refcolors[1].rgb) {
-                    // fixpoint reached
-                    break;
-                }
-                oldbestc0 = refcolors[0];
-                oldbestc1 = refcolors[1];
+            if (oldbestc0.rgb == refcolors[0].rgb && oldbestc1.rgb == refcolors[1].rgb) {
+                // fixpoint reached
+                break;
             }
+            oldbestc0 = refcolors[0];
+            oldbestc1 = refcolors[1];
         }
 
 
@@ -114,24 +111,24 @@ public class Block4x4 {
         }
     }
 
-    private void dither(int dither, List<Color16> colorcandidates, Set<Color16> colorset) {
-        if (dither > 0) {
-            List<Color16> wigglecolors = new ArrayList<Color16>();
+    private void createNewColors(int searchrange, List<Color16> colorcandidates, Set<Color16> colorset) {
+        if (searchrange > 0) {
+            List<Color16> newcolors = new ArrayList<Color16>();
             for (Color16 basecolor : colorcandidates) {
-                for (int roff = -dither; roff <= dither; ++roff) {
-                    for (int goff = -dither; goff <= dither; ++goff) {
-                        for (int boff = -dither; boff <= dither; ++boff) {
+                for (int roff = -searchrange; roff <= searchrange; ++roff) {
+                    for (int goff = -searchrange; goff <= searchrange; ++goff) {
+                        for (int boff = -searchrange; boff <= searchrange; ++boff) {
                             if ((roff | goff | roff) != 0) {
                                 Color16 newcolor = new Color16(basecolor);
                                 newcolor.applyOffset(roff, goff, boff);
-                                wigglecolors.add(newcolor);
+                                newcolors.add(newcolor);
                             }
                         }
                     }
                 }
             }
 
-            for (Color16 c : wigglecolors) {
+            for (Color16 c : newcolors) {
                 if (!colorset.contains(c)) {
                     colorcandidates.add(c);
                     colorset.add(c);
@@ -200,8 +197,10 @@ public class Block4x4 {
         alphavalues[0] = alphaminmax[1];
         alphavalues[1] = alphaminmax[0];
 
-        for (int i = 1; i <= 6; ++i) {
-            alphavalues[i + 1] = (((7 - i) * alphavalues[0]) + (i * alphavalues[1])) / 7;
+        if (!config.onlyreferencecolors) {
+            for (int i = 1; i <= 6; ++i) {
+                alphavalues[i + 1] = (((7 - i) * alphavalues[0]) + (i * alphavalues[1])) / 7;
+            }
         }
 
     }
@@ -226,12 +225,54 @@ public class Block4x4 {
             }
 
             colorIndices[i] = minidx;
+
+            // dither
+            if (config.dither) {
+                distributeError(i, minidx);
+            }
+
+        }
+
+        if (config.dither) {
+            // dithering modifies the input color values, so restore them
+            // when we're done so the next passes won't get screwed
+            System.arraycopy(rgbdataCopy, 0, rgbdata, 0, rgbdata.length);
+        }
+
+    }
+
+    private void distributeError(int coloridx, int palettecolor) {
+        if (coloridx < rgbdata.length - 1) {
+            int targetcolor = rgbdata[coloridx];
+            int neighbour = rgbdata[coloridx + 1];
+            int pickedcolor = colors[palettecolor];
+
+            int rdiff = ((targetcolor >> 16) & 0xFF) - ((pickedcolor >> 16) & 0xFF);
+            int gdiff = ((targetcolor >> 8) & 0xFF) - ((pickedcolor >> 8) & 0xFF);
+            int bdiff = (targetcolor & 0xFF) - (pickedcolor & 0xFF);
+
+            int rdithered = ((neighbour >> 16) & 0xFF) + rdiff;
+            rdithered = Math.min(rdithered, 255);
+            rdithered = Math.max(rdithered, 0);
+
+            int gdithered = ((neighbour >> 8) & 0xFF) + gdiff;
+            gdithered = Math.min(gdithered, 255);
+            gdithered = Math.max(gdithered, 0);
+
+            int bdithered = (neighbour & 0xFF) + bdiff;
+            bdithered = Math.min(bdithered, 255);
+            bdithered = Math.max(bdithered, 0);
+
+            rgbdata[coloridx + 1] = (rdithered << 16) | (gdithered << 8) | bdithered;
         }
     }
 
     private void pickAlphaIndex() {
         alphaIndices = new byte[rgbdata.length];
-        for (int i = 0; i < alphaIndices.length; ++i) {
+
+        int maxidx = config.onlyreferencecolors ? 2 : alphaIndices.length;
+
+        for (int i = 0; i < maxidx; ++i) {
             int alpha = (rgbdata[i] >> 24) & 0xFF;
             int minerror = Integer.MAX_VALUE;
             for (byte alphaidx = 0; alphaidx < alphavalues.length; ++alphaidx) {
