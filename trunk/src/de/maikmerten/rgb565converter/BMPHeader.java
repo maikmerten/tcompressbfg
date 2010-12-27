@@ -17,6 +17,28 @@ public class BMPHeader {
     public int greenmask = (63 << 5);
     public int bluemask = 31;
 
+    public BMPHeader() {
+        computeBitmasks(5, 6, 5);
+    }
+
+    public final void computeBitmasks(int redbits, int greenbits, int bluebits) {
+        redmask = computeBitmaskBase(redbits);
+        redmask <<= (greenbits + bluebits);
+        greenmask = computeBitmaskBase(greenbits);
+        greenmask <<= bluebits;
+        bluemask = computeBitmaskBase(bluebits);
+    }
+
+    private int computeBitmaskBase(int bits) {
+        int base = 0;
+        for(int i = 0; i < bits; ++i) {
+            base <<= 1;
+            base |= 1;
+        }
+        return base;
+    }
+
+
     public void writeBytes(DataOutputStream ds) throws Exception {
 
         // 14 bytes file header
